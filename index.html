@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>Contentful UI-Extension Product Features</title>
+        <link rel="stylesheet" href="https://contentful.github.io/ui-extensions-sdk/cf-extension.css">
+        <link rel="dns-prefetch preconnect" href="https://cdn11.bigcommerce.com" crossorigin>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            button[disabled] {
+                opacity: 0.7;
+                cursor: default !important;
+            }
+
+            button.f36-button {
+                height: 2.5rem;
+                display: inline-block;
+                padding: 0 1rem;
+                color: #536171;
+                line-height: 2;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                border: .0625rem solid #c3cfd5;
+                border-radius: .125rem;
+                font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+                font-size: .875rem;
+                overflow: hidden;
+                -webkit-transition: background-color .2s ease-in-out,opacity .2s ease-in-out,border-color .2s ease-in-out;
+                transition: background .2s ease-in-out,opacity .2s ease-in-out,border-color .2s ease-in-out;
+                vertical-align: middle;
+                text-decoration: none;
+                cursor: pointer;
+                outline: none;
+            }
+
+            button.f36-button.color-default {
+                background: #e5ebed;
+            }
+
+            button.f36-button.color-default:hover {
+                background: #d3dce0;
+            }
+
+            button.f36-button.color-positive,
+            button.f36-button.color-negative {
+                color: #f7f9fa;
+            }
+
+            button.f36-button.color-positive {
+                border-color: #0baa75;
+                background-image: -webkit-gradient(linear,left bottom,left top,from(#0eb87f),to(#14d997));
+                background-image: linear-gradient(0deg,#0eb87f,#14d997);
+                background-size: 100% 200%;
+            }
+
+            button.f36-button.color-positive:hover {
+                background-position: 0 100%;
+            }
+
+            button.f36-button.color-negative {
+                border-color: #cd3f39;
+                background-image: -webkit-gradient(linear,left bottom,left top,from(#d9453f),to(#f05751));
+                background-image: linear-gradient(0deg,#d9453f,#f05751);
+                background-size: 100% 200%;
+            }
+
+            button.f36-button.color-negative:hover {
+                background-position: 0 100%;
+            }
+
+            form label {
+                font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+                font-size: .875rem;
+                line-height: 1.5;
+                display: inline-block;
+                color: #2a3039;
+                font-weight: 600;
+                margin-bottom: .5rem;
+            }
+
+            form input {
+                outline: none;
+                background-color: #fff;
+                border: 1px solid #d3dce0;
+                max-height: 2.5rem;
+                color: #536171;
+                font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+                font-size: .875rem;
+                padding: .65625rem;
+                margin: 0 0 12px;
+                width: 100%;
+                -webkit-appearance: textfield;
+            }
+
+            ul {
+                list-style: none;
+                padding: 0;
+            }
+
+            ul li {
+                border-bottom: 1px solid #e5ebed;
+                color: #536171;
+                font-size: .875rem;
+                font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+                font-weight: 400;
+                line-height: 1.5;
+                padding: .9375rem 1.25rem;
+                vertical-align: top;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .glow-positive {
+                box-shadow: 0px 0px 7px #0eb87f;
+            }
+
+            .d-none {
+                display: none !important;
+            }
+
+            .text-center {
+                text-align: center;
+            }
+
+            .text-uppercase {
+                text-transform: uppercase;
+            }
+
+            .alert-danger {
+                background-color: #d9453f;
+                padding: .875rem;
+                color: #f7f9fa;
+            }
+        </style>
+        <script src="https://unpkg.com/contentful-ui-extensions-sdk@3"></script>
+    </head>
+    <body id="product_feature_extension">
+   		<div>
+              	<!-- Loading message or spinner -->
+                <div id="error_message" class="alert alert-danger d-none" role="alert"></div>
+
+                <div>
+                    <form id="product_feature_form">
+                        <label for="feature_label">Label</label>
+                        <input id="feature_label" type="text" name="feature_label">
+                        <label for="feature_desc">Description</label>
+                        <textarea id="feature_desc" name="feature_desc"></textarea>
+                        <label for="feature_x">X Coordinate</label>
+                        <input id="feature_x" type="number" name="feature_x">
+                        <label for="feature_y">Y Coordinate</label>
+                        <input id="feature_y" type="number" name="feature_y">
+                        <button type="submit" class="f36-button color-positive">Add Feature</button>
+                    </form>
+                </div>
+
+                <!-- Main product feature listing element, to be filled out with product feature data -->
+                <div id="product_feature_listing" class="">
+
+                </div>
+        </div>
+        <script>
+            window.contentfulExtension.init( extension => {
+                // Size iframe
+                extension.window.startAutoResizer();
+
+                // Set initial value
+                const fieldValue = extension.field.getValue();
+                let featureObj = { feature_items: [] };
+
+                function createfeatureItem(featureItemObj) {
+                    let itemElem = document.createElement('li');
+                    itemElem.innerHTML = `<span><strong>${featureItemObj.label}</strong>: ${featureItemObj.description}</span> <span><em>(${featureItemObj.x}, ${featureItemObj.y})</em><button type=button class="f36-button color-negative">Remove</button>`;
+                    itemElem.setAttribute('data-index', document.querySelectorAll('#product_feature_listing > li').length);
+
+                    document.getElementById('product_feature_listing').appendChild(itemElem);
+                    itemElem.querySelector('button.color-negative').addEventListener('click', deletefeatureItem);
+                }
+
+                function renderfeatureItems() {
+                    if(featureObj.feature_items.length > 0) {
+                        for(let i = 0; i < featureObj.feature_items.length; i++) {
+                            createfeatureItem(featureObj.feature_items[i], false);
+                        }
+                    }
+                }
+
+                function deletefeatureItem(e) {
+                    let buttons = document.querySelectorAll('button');
+                    for(let i = 0; i < buttons.length; i++) {
+                        buttons[i].setAttribute('disabled', '');
+                    }
+
+                  	featureObj.feature_items.splice(parseInt(e.path[1].getAttribute('data-index')), 1);
+                  	document.getElementById('product_feature_listing').removeChild(e.path[1]);
+                    extension.field.setValue(featureObj);
+
+                    setTimeout(function() {
+                        for(let i = 0; i < buttons.length; i++) {
+                            buttons[i].removeAttribute('disabled');
+                        }
+                    }, 2000);
+                }
+
+                document.forms['product_feature_form'].addEventListener('submit', function formHandler(e) {
+                    e.preventDefault();
+
+                    let buttons = document.querySelectorAll('button');
+                    for(let i = 0; i < buttons.length; i++) {
+                        buttons[i].setAttribute('disabled', '');
+                    }
+
+                    let featureItem = {
+                        label: document.forms['product_feature_form']['feature_label'].value,
+                        description: document.forms['product_feature_form']['feature_desc'].value,
+                        x: document.forms['product_feature_form']['feature_x'].value,
+                        y: document.forms['product_feature_form']['feature_y'].value
+                    };
+
+                    featureObj.feature_items.push(featureItem);
+                    createfeatureItem(featureItem);
+                    extension.field.setValue(featureObj);
+
+                    document.forms['product_feature_form'].reset;
+
+                    setTimeout(function() {
+                        for(let i = 0; i < buttons.length; i++) {
+                            buttons[i].removeAttribute('disabled');
+                        }
+                    }, 2000);
+                });
+
+                if (typeof fieldValue != 'undefined' && fieldValue.feature_items.length > 0) {
+                    featureObj = fieldValue;
+                    renderfeatureItems();
+                }
+            });
+        </script>
+    </body>
+</html>
