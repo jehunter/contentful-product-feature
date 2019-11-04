@@ -83,7 +83,6 @@
             }
 
             form input {
-                outline: none;
                 background-color: #fff;
                 border: 1px solid #d3dce0;
                 max-height: 2.5rem;
@@ -94,6 +93,17 @@
                 margin: 0 0 12px;
                 width: 100%;
                 -webkit-appearance: textfield;
+            }
+
+            form textarea {
+                background-color: #fff;
+                border: 1px solid #d3dce0;
+                color: #536171;
+                font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+                font-size: .875rem;
+                padding: .65625rem;
+                margin: 0 0 12px;
+                width: 100%;
             }
 
             ul {
@@ -159,8 +169,10 @@
                 </div>
 
                 <!-- Main product feature listing element, to be filled out with product feature data -->
-                <div id="product_feature_listing" class="">
+                <div>
+                    <ul  id="product_feature_listing">
 
+                    </ul>
                 </div>
         </div>
         <script>
@@ -174,7 +186,7 @@
 
                 function createfeatureItem(featureItemObj) {
                     let itemElem = document.createElement('li');
-                    itemElem.innerHTML = `<span><strong>${featureItemObj.label}</strong>: ${featureItemObj.description}</span> <span><em>(${featureItemObj.x}, ${featureItemObj.y})</em><button type=button class="f36-button color-negative">Remove</button>`;
+                    itemElem.innerHTML = `<span><strong>${featureItemObj.label}</strong>: ${featureItemObj.description}</span> <span><em>(${featureItemObj.x}, ${featureItemObj.y})</em></span><button type=button class="f36-button color-negative">Remove</button>`;
                     itemElem.setAttribute('data-index', document.querySelectorAll('#product_feature_listing > li').length);
 
                     document.getElementById('product_feature_listing').appendChild(itemElem);
@@ -225,7 +237,7 @@
                     createfeatureItem(featureItem);
                     extension.field.setValue(featureObj);
 
-                    document.forms['product_feature_form'].reset;
+                    document.forms['product_feature_form'].reset();
 
                     setTimeout(function() {
                         for(let i = 0; i < buttons.length; i++) {
