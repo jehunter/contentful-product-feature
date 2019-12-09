@@ -15,6 +15,10 @@
                 cursor: default !important;
             }
 
+            button + button {
+                margin-left: 5px;
+            }
+
             button.f36-button {
                 height: 2.5rem;
                 display: inline-block;
@@ -160,6 +164,7 @@
 
                 <div>
                     <form id="product_feature_form">
+                        <input id="index" type="hidden" name="index" value="">
                         <label for="feature_label">Label</label>
                         <input id="feature_label" type="text" name="feature_label">
                         <label for="feature_desc">Description</label>
@@ -168,7 +173,7 @@
                         <input id="feature_x" type="number" name="feature_x">
                         <label for="feature_y">Y Coordinate</label>
                         <input id="feature_y" type="number" name="feature_y">
-                        <button type="submit" class="f36-button color-positive">Add Feature</button>
+                        <button type="submit" name="submit" class="f36-button color-positive">Add Feature</button>
                     </form>
                 </div>
                 <hr>
@@ -188,24 +193,25 @@
                 const fieldValue = extension.field.getValue();
                 let featureObj = { feature_items: [] };
 
-                function createfeatureItem(featureItemObj) {
+                function createFeatureItem(featureItemObj) {
                     let itemElem = document.createElement('li');
-                    itemElem.innerHTML = `<span><strong>${featureItemObj.label}</strong>: ${featureItemObj.description}</span> <span><em>(${featureItemObj.x}, ${featureItemObj.y})</em></span><button type=button class="f36-button color-negative">Remove</button>`;
+                    itemElem.innerHTML = `<span><strong>${featureItemObj.label}</strong>: ${featureItemObj.description}</span> <span><em>(${featureItemObj.x}, ${featureItemObj.y})</em></span><button type=button class="f36-button edit">Edit</button><button type=button class="f36-button color-negative">Remove</button>`;
                     itemElem.setAttribute('data-index', document.querySelectorAll('#product_feature_listing > li').length);
 
                     document.getElementById('product_feature_listing').appendChild(itemElem);
-                    itemElem.querySelector('button.color-negative').addEventListener('click', deletefeatureItem);
+                    itemElem.querySelector('button.color-negative').addEventListener('click', deleteFeatureItem);
+                    itemElem.querySelector('button.edit').addEventListener('click', editFeatureItem);
                 }
 
-                function renderfeatureItems() {
+                function renderFeatureItems() {
                     if(featureObj.feature_items.length > 0) {
                         for(let i = 0; i < featureObj.feature_items.length; i++) {
-                            createfeatureItem(featureObj.feature_items[i], false);
+                            createFeatureItem(featureObj.feature_items[i], false);
                         }
                     }
                 }
 
-                function deletefeatureItem(e) {
+                function deleteFeatureItem(e) {
                     let buttons = document.querySelectorAll('button');
                     for(let i = 0; i < buttons.length; i++) {
                         buttons[i].setAttribute('disabled', '');
@@ -220,6 +226,52 @@
                             buttons[i].removeAttribute('disabled');
                         }
                     }, 2000);
+                }
+
+                function editFeatureItem(e) {
+                    document.forms['product_feature_form'].reset();
+
+                    let featureItemIndex = null;
+                    for(let i = 0; i < e.path.length; i++) {
+                        if(e.path[i].tagName == 'li' || e.path[i].tagName == 'LI') {
+                            featureItemIndex = e.path[i].getAttribute('data-index');
+                            break;
+                        }
+                    }
+
+                    if(featureItemIndex != null) {
+
+                        let featureItem = featureObj.feature_items[featureItemIndex];
+
+                        document.forms['product_feature_form']['index'].value = featureItemIndex;
+
+                        if(typeof featureItem.label != 'undefined') {
+                            document.forms['product_feature_form']['feature_label'].value = featureItem.label;
+                        }
+                        if(typeof featureItem.description != 'undefined') {
+                            document.forms['product_feature_form']['feature_desc'].value = featureItem.description;
+                        }
+
+                        if(typeof featureItem.x != 'undefined') {
+                            document.forms['product_feature_form']['feature_x'].value = featureItem.x;
+                        }
+
+                        if(typeof featureItem.y != 'undefined') {
+                            document.forms['product_feature_form']['feature_y'].value = featureItem.y;
+                        }
+
+                        document.forms['product_feature_form']['submit'].textContent = 'Update Feature';
+                        document.forms['product_feature_form']['feature_label'].focus();
+                    }
+                }
+
+                function updatefeatureItem(i, featureItemObj) {
+                    if(document.querySelector(`#product_feature_listing li[data-index="${i}"]`) != null){
+                        let itemElem = document.querySelector(`#product_feature_listing li[data-index="${i}"]`);
+                        itemElem.innerHTML = `<span><strong>${featureItemObj.feature_label}:</strong> ${featureItemObj.description}</span> <span><em>(${featureItemObj.x}, ${featureItemObj.y})</em></span><div><button type=button class="f36-button edit">Edit</button><button type=button class="f36-button color-negative">Remove</button></div>`;
+                        itemElem.querySelector('button.color-negative').addEventListener('click', deletefeatureItem);
+                        itemElem.querySelector('button.edit').addEventListener('click', editfeatureItem);
+                    }
                 }
 
                 document.forms['product_feature_form'].addEventListener('submit', function formHandler(e) {
@@ -238,9 +290,10 @@
                     };
 
                     featureObj.feature_items.push(featureItem);
-                    createfeatureItem(featureItem);
+                    createFeatureItem(featureItem);
                     extension.field.setValue(featureObj);
 
+                    document.forms['product_feature_form']['submit'].textContent = 'Add Feature';
                     document.forms['product_feature_form'].reset();
 
                     setTimeout(function() {
@@ -252,7 +305,7 @@
 
                 if (typeof fieldValue != 'undefined' && fieldValue.feature_items.length > 0) {
                     featureObj = fieldValue;
-                    renderfeatureItems();
+                    renderFeatureItems();
                 }
             });
         </script>
